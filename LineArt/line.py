@@ -7,29 +7,87 @@ W, H = 800, 600
 screen =  pygame.display.set_mode((W,H))
 
 clock = pygame.time.Clock()
-count = 0
-count_circle = 0
 
+class rotateCircle():
+    def __init__(self, angle):
+        self.angle = angle
 
-base=[]
-for i in range(1,61)[::-1]:
-    x = W / 2
-    y = H / 4 * 3 + H / 4 / 3600 * i * i
-    
-    r = i*i/3600*W/2
-    
-    base.append([x,y,r])
+    def draw(self):
+        angle = self.angle / 360 * 2 * math.pi;
+        
+        for i in range(5):
+            color = 255 * (i+1) / 5
+            angle += 2 / 360 * 2 * math.pi;
+            x = W * (0.5 + 0.33 * math.cos(angle));
+            y = H * (0.33 + 0.13 * math.sin(angle));
+            r = W * (0.01 + 0.003 * math.sin(angle));
+            pygame.draw.circle(screen,(color,color,color),(x, y), r)
 
-circle=[]
-for i in range(40):
-    x = math.sin(2*math.pi*i/40)*W/4*3/2+W/2 
-    y = math.cos(2*math.pi*i/40)*H/6+H/3
-    r = math.cos(2*math.pi*i/40)*2+10
+    def update(self):
+        self.angle += 5
+
+class rotateLine():
+    def __init__(self, angle):
+        self.angle = angle
+
+    def draw(self):
+        angle = self.angle / 360 * 2 * math.pi;
+
+        x1 = W / 2;
+        x3 = W / 2;
+        y1 = H * 0.07;
+        y3 = H * 0.72;
+
+        for i in range(10):
+            color = 255 * (i+1) / 10
+            angle -= 1 / 360 * 2 * math.pi;
+            width = 1 if angle > math.pi else 2
+
+            x2 = W * (0.5 + math.cos(angle) * 0.3);
+            y2 = H * (0.6 + math.sin(angle) * 0.05);
+
+            pygame.draw.line(screen,(color,color,color),(x1,y1),(x2,y2),width)
+            pygame.draw.line(screen,(color,color,color),(x2,y2),(x3,y3),width)
+
+    def update(self):
+        self.angle -= 5
+        if self.angle < 0:
+            self.angle += 360
+
+class dropGround():
+    def __init__(self, position):
+        self.position = position
+
+    def draw(self):
+
+        for i in range(9,-1,-1):
+            pos = self.position + i
+
+            x = W / 2;
+            y = H * (0.75 + 0.25 * pos * pos / 60 / 60);
+            r = (pos * pos) / 3600 * (W / 2);
     
-    circle.append([x,y,r])
-    
-    
-    
+            color = 255 * (i + 1) / 10
+        
+            pygame.draw.ellipse(screen,(color,color,color),(x-r, y-r*0.3, 2*r,2*r*0.3))
+
+    def update(self):
+        self.position += 1
+        if self.position > 60:
+            self.position = 0
+
+circles = []
+for i in range(3):
+    circles.append(rotateCircle(360 / 3 * i))
+
+lines = []
+for i in range(6):
+    lines.append(rotateLine(360 / 6 * i))
+
+grounds = []
+for i in range(5,-1,-1):
+    grounds.append(dropGround(i / 6 * 60))
+
 running = True
 while running:
     for e in pygame.event.get():
@@ -37,76 +95,20 @@ while running:
             running = False
     
     screen.fill((0,0,0))
-    
-    for i,(x,y,r) in enumerate(base):
-        
-        color = 255 - 255 * ((i+ count) % 10) / 10
-        
-        pygame.draw.ellipse(screen,(color,color,color),(x-r, y-r*0.3, 2*r,2*r*0.3))
 
-    for i in range(90):
-        color = 255 - 255 * ((i+ count) % 10) / 10
-        
-        x = math.sin(2*math.pi*i/90)*160+255
-        y = math.cos(2*math.pi*i/90)*38+140
-        
-        x = x / 512 * W
-        y = y / 212 * H
-        
-        x1 = 255 / 512 * W
-        x2 = 255 / 512 * W
-        y1 = 8 / 212 * H
-        y2 = 134 / 212 * H
-        
-#        pygame.draw.line(screen,(color,color,color),(255,8),(x,y))
-#        pygame.draw.line(screen,(color,color,color),(255,134),(x,y))
-        pygame.draw.line(screen,(color,color,color),(x1,y1),(x,y))
-        pygame.draw.line(screen,(color,color,color),(x2,y2),(x,y))
+    for c in circles:
+        c.draw()
+        c.update()
 
-    for i in range(1,6):
-        (x,y,r) = circle[(count_circle+i)%40]
-        
-        color = 255 * i / 5
-        
-        pygame.draw.circle(screen,(color,color,color),(x, y), r)
-                   
-        
-#for i = 26 to 114
-#    line(255,8) - (sin(i/14.2)*160+255, cos(i/14.2)*38 + 140)
-#    line - (255,134)
-        
-        
+    for l in lines:
+        l.draw()
+        l.update()
+
+    for g in sorted(grounds, key=lambda grounds: grounds.position, reverse=True):
+        g.draw()
+        g.update()
+
     pygame.display.flip()
     clock.tick(30)
-    
-    count += 1
-    count_circle += 1
-    
-    if count >= 10:
-        count = 0
-    if count_circle >= 40:
-        count_circle = 0
-            
+
 pygame.quit()
-
-
-'''
-    for i in range(20):
-        color = 255 * (i % 10) * 10 
-        pygame.draw.ellipse(screen,(color,color,color),(sin(i/3.2)*178*255,cos(i/3.2)*30+70,cos(i/3.2)*2+10))
-    
-    for i in range(26,114):
-        pygame.draw.ellipse(screen,(color,color,color),(sin(i/3.2)*178*255,cos(i/3.2)*30+70,cos(i/3.2)*2+10))
-'''
-
-#for i = 60 to 0 step -1
-#    circle(255,150+i*i/35,i*i/12),imod10+1
-#
-#for i = 0 to 19
-#    circle(sin(i/3.2)*178+255,cos(i/3.2)*30+70,cos(i/3.2)*2+10,10-i mod 10
-#    
-#for i = 26 to 114
-#    line(255,8) - (sin(i/14.2)*160+255, cos(i/14.2)*38 + 140)
-#    line - (255,134)
-           
-#pygame.draw.line(Surface, color, start_pos, end_pos, width=1):    
