@@ -9,6 +9,26 @@ function resizeCanvas() {
     H = window.innerHeight;
     canvas.width = W;
     canvas.height = H;
+
+    // base 配列のデータを生成
+    const base = [];
+    for (let ii = 180; ii >= 1; ii--) {
+        let i = ii * 60 / 180
+        const x = W / 2;
+        const y = H * (0.75 + 0.25 * i * i / 60 / 60);
+        const r = (i * i) / 3600 * (W / 2);
+        base.push({ x, y, r });
+    }
+
+    // 円の位置と大きさのデータを生成
+    const circle = [];
+    for (let i = 0; i < 40; i++) {
+        const angle = (2 * Math.PI * i) / 40;
+        const x = W * (0.5 + 0.33 * Math.sin(angle));
+        const y = H * (0.33 + 0.16 * Math.cos(angle));
+        const r = W * (0.01 + 0.003 * Math.cos(angle));
+        circle.push({ x, y, r });
+    }
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
@@ -18,18 +38,18 @@ const base = [];
 for (let ii = 180; ii >= 1; ii--) {
     let i = ii * 60 / 180
     const x = W / 2;
-    const y = (H / 4) * 3 + (H / 4) * (i * i) / 3600;
+    const y = H * (0.75 + 0.25 * i * i / 60 / 60);
     const r = (i * i) / 3600 * (W / 2);
     base.push({ x, y, r });
 }
 
-// 円のデータを生成
+// 円の位置と大きさのデータを生成
 const circle = [];
 for (let i = 0; i < 40; i++) {
     const angle = (2 * Math.PI * i) / 40;
-    const x = Math.sin(angle) * (W / 4) * (3 / 2) + W / 2;
-    const y = Math.cos(angle) * (H / 6) + H / 3;
-    const r = Math.cos(angle) * 2 + 10;
+    const x = W * (0.5 + 0.33 * Math.sin(angle));
+    const y = H * (0.33 + 0.16 * Math.cos(angle));
+    const r = W * (0.01 + 0.003 * Math.cos(angle));
     circle.push({ x, y, r });
 }
 
@@ -60,21 +80,17 @@ function animate() {
         ctx.fill();
     }
 
-
     // ラインの描画
+    x1 = W / 2;
+    x2 = W / 2;
+    y1 = H * 0.07;
+    y2 = H * 0.72;
     for (let i = 0; i < 90; i++) {
-        const color = 255 - (255 * ((i + countLine) % 15)) / 15;
-        const angle = (2 * Math.PI * i) / 90;
-        const x = Math.sin(angle) * 160 + 255;
-        const y = Math.cos(angle) * 38 + 140;
+        color = 255 - (255 * ((i + countLine) % 15)) / 15;
+        angle = (2 * Math.PI * i) / 90;
 
-        const xCanvas = (x / 512) * W;
-        const yCanvas = (y / 212) * H;
-
-        const x1 = (255 / 512) * W;
-        const x2 = (255 / 512) * W;
-        const y1 = (8 / 212) * H;
-        const y2 = (150 / 212) * H;
+        xCanvas = W * (0.5 + Math.sin(angle) * 0.3);
+        yCanvas = H * (0.63 + Math.cos(angle) * 0.05);
 
         ctx.strokeStyle = `rgb(${color}, ${color}, ${color})`;
         ctx.beginPath();
