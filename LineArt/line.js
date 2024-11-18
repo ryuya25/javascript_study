@@ -11,7 +11,7 @@ function resizeCanvas() {
     canvas.height = H;
 
     // base 配列のデータを生成
-    const base = [];
+    base.length = 0;
     for (let ii = 180; ii >= 1; ii--) {
         let i = ii * 60 / 180
         const x = W / 2;
@@ -21,7 +21,7 @@ function resizeCanvas() {
     }
 
     // 円の位置と大きさのデータを生成
-    const circle = [];
+    circle.length = 0;
     for (let i = 0; i < 40; i++) {
         const angle = (2 * Math.PI * i) / 40;
         const x = W * (0.5 + 0.33 * Math.sin(angle));
@@ -30,28 +30,16 @@ function resizeCanvas() {
         circle.push({ x, y, r });
     }
 }
+
+// base 配列のデータを生成
+let base = [];
+
+// 円の位置と大きさのデータを生成
+let circle = [];
+
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// base 配列のデータを生成
-const base = [];
-for (let ii = 180; ii >= 1; ii--) {
-    let i = ii * 60 / 180
-    const x = W / 2;
-    const y = H * (0.75 + 0.25 * i * i / 60 / 60);
-    const r = (i * i) / 3600 * (W / 2);
-    base.push({ x, y, r });
-}
-
-// 円の位置と大きさのデータを生成
-const circle = [];
-for (let i = 0; i < 40; i++) {
-    const angle = (2 * Math.PI * i) / 40;
-    const x = W * (0.5 + 0.33 * Math.sin(angle));
-    const y = H * (0.33 + 0.16 * Math.cos(angle));
-    const r = W * (0.01 + 0.003 * Math.cos(angle));
-    circle.push({ x, y, r });
-}
 
 // アニメーション用のカウンタ
 let countBase = 0;
