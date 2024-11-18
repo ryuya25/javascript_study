@@ -9,42 +9,119 @@ function resizeCanvas() {
     H = window.innerHeight;
     canvas.width = W;
     canvas.height = H;
+}
 
-    // base 配列のデータを生成
-    base.length = 0;
-    for (let ii = 180; ii >= 1; ii--) {
-        let i = ii * 60 / 180
-        const x = W / 2;
-        const y = H * (0.75 + 0.25 * i * i / 60 / 60);
-        const r = (i * i) / 3600 * (W / 2);
-        base.push({ x, y, r });
+class RotateCircle {
+    constructor(angle) {
+        this.angle = angle;
     }
 
-    // 円の位置と大きさのデータを生成
-    circle.length = 0;
-    for (let i = 0; i < 40; i++) {
-        const angle = (2 * Math.PI * i) / 40;
-        const x = W * (0.5 + 0.33 * Math.sin(angle));
-        const y = H * (0.33 + 0.16 * Math.cos(angle));
-        const r = W * (0.01 + 0.003 * Math.cos(angle));
-        circle.push({ x, y, r });
+    draw() {
+        let angle = (this.angle / 360) * 2 * Math.PI;
+
+        for (let i = 0; i < 5; i++) {
+            const color = 255 * (i + 1) / 5;
+            angle += (2 / 360) * 2 * Math.PI;
+            const x = W * (0.5 + 0.33 * Math.cos(angle));
+            const y = H * (0.33 + 0.1 * Math.sin(angle));
+            const r = Math.max(W, H) * (0.01 + 0.003 * Math.sin(angle));
+
+            ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
+
+    update() {
+        this.angle += 5;
     }
 }
 
-// base 配列のデータを生成
-let base = [];
+class RotateLine {
+    constructor(angle) {
+        this.angle = angle;
+    }
 
-// 円の位置と大きさのデータを生成
-let circle = [];
+    draw() {
+        let angle = (this.angle / 360) * 2 * Math.PI;
+
+        const x1 = W / 2;
+        const y1 = H * 0.07;
+        const x3 = W / 2;
+        const y3 = H * 0.72;
+
+        for (let i = 0; i < 10; i++) {
+            const color = 255 * (i + 1) / 10;
+            angle -= (1 / 360) * 2 * Math.PI;
+            const width = angle < Math.PI ? 2 : 1;
+
+            const x2 = W * (0.5 + Math.cos(angle) * 0.3);
+            const y2 = H * (0.6 + Math.sin(angle) * 0.05);
+
+            ctx.strokeStyle = `rgb(${color}, ${color}, ${color})`;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.lineTo(x3, y3);
+            ctx.stroke();
+        }
+    }
+
+    update() {
+        this.angle -= 5;
+        if (this.angle < 0) this.angle += 360;
+    }
+}
+
+class DropGround {
+    constructor(position) {
+        this.position = position;
+    }
+
+    draw() {
+        for (let i = 9; i >= 0; i--) {
+            const pos = this.position + i;
+            const x = W / 2;
+            const y = H * (0.75 + 0.25 * (pos ** 2) / 60 / 60);
+            const r = (pos ** 2) / 3600 * (W / 2);
+
+            const color = 255 * (i + 1) / 10;
+
+            ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
+            ctx.beginPath();
+            ctx.ellipse(x, y, r, r * (H / W) * 0.3, 0, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
+
+    update() {
+        this.position += 1;
+        if (this.position > 60) this.position = 0;
+    }
+}
+
+const circles = [];
+for (let i = 0; i < 3; i++) {
+    circles.push(new RotateCircle((360 / 3) * i));
+}
+
+const lines = [];
+for (let i = 0; i < 6; i++) {
+    lines.push(new RotateLine((360 / 6) * i));
+}
+
+const grounds = [];
+for (let i = 5; i >= 0; i--) {
+    grounds.push(new DropGround((i / 6) * 60));
+}
+
+
 
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-
-// アニメーション用のカウンタ
-let countBase = 0;
-let countLine = 0;
-let countCircle = 0;
 
 // アニメーション関数
 function animate() {
@@ -53,52 +130,21 @@ function animate() {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, W, H);
 
-    countBase += 1;
-    countLine += 1;
-    countCircle += 1;
-
-    // 楕円の描画
-    for (let i = 0; i < base.length; i++) {
-        const { x, y, r } = base[i];
-        const color = 255 - (255 * ((i + countBase) % 20)) / 20;
-        ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
-
-        ctx.beginPath();
-        ctx.ellipse(x, y, r, r * 0.3, 0, 0, Math.PI * 2);
-        ctx.fill();
+    for (const circle of circles) {
+        circle.draw();
+        circle.update();
     }
 
-    // ラインの描画
-    x1 = W / 2;
-    x2 = W / 2;
-    y1 = H * 0.07;
-    y2 = H * 0.72;
-    for (let i = 0; i < 90; i++) {
-        color = 255 - (255 * ((i + countLine) % 15)) / 15;
-        angle = (2 * Math.PI * i) / 90;
-
-        xCanvas = W * (0.5 + Math.sin(angle) * 0.3);
-        yCanvas = H * (0.63 + Math.cos(angle) * 0.05);
-
-        ctx.strokeStyle = `rgb(${color}, ${color}, ${color})`;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(xCanvas, yCanvas);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
+    for (const line of lines) {
+        line.draw();
+        line.update();
     }
 
-    // 円の描画
-    for (let j = 0; j < 2; j++) {
-        for (let i = 0; i < 5; i++) {
-            const index = (countCircle + (i + j * 20)) % 40;
-            const { x, y, r } = circle[index];
-            const color = (255 * (i+1)) / 5;
-            ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fill();
-        }
+    // positionの降順でソートして描画
+    grounds.sort((a, b) => b.position - a.position);
+    for (const ground of grounds) {
+        ground.draw();
+        ground.update();
     }
 
     setTimeout(animate, 33);
