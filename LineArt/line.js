@@ -11,20 +11,34 @@ function resizeCanvas() {
     canvas.height = H;
 }
 
+
+
 class RotateCircle {
     constructor(angle) {
         this.angle = angle;
+
+        this.centerX = 0.5;
+        this.centerY = 0.33;
+        this.rangeX = 0.33;
+        this.rangeY = 0.1;
+        this.centerRadius = 0.01;
+        this.rangeRadius = 0.003;
+
+        this.updateAngle = 10
+        this.gradationNumber = 5
+        this.gradationAngle = 2
+        this.degrees = 360
     }
 
     draw() {
-        let angle = (this.angle / 360) * 2 * Math.PI;
+        let angle = (this.angle / this.degrees) * 2 * Math.PI;
 
-        for (let i = 0; i < 5; i++) {
-            const color = 255 * (i + 1) / 5;
-            angle += (2 / 360) * 2 * Math.PI;
-            const x = W * (0.5 + 0.33 * Math.cos(angle));
-            const y = H * (0.33 + 0.1 * Math.sin(angle));
-            const r = Math.max(W, H) * (0.01 + 0.003 * Math.sin(angle));
+        for (let i = 0; i < this.gradationNumber; i++) {
+            const color = 255 * (i + 1) / this.gradationNumber;
+            angle += (this.gradationAngle / this.degrees) * 2 * Math.PI;
+            const x = W * (this.centerX + this.rangeX * Math.cos(angle));
+            const y = H * (this.centerY + this.rangeY * Math.sin(angle));
+            const r = Math.max(W, H) * (this.centerRadius + this.rangeRadius * Math.sin(angle));
 
             ctx.fillStyle = `rgb(${color}, ${color}, ${color})`;
             ctx.beginPath();
@@ -34,7 +48,10 @@ class RotateCircle {
     }
 
     update() {
-        this.angle += 5;
+        this.angle += this.updateAngle;
+        if (this.angle > this.degrees){
+            this.angle -= this.degrees;
+        }   
     }
 }
 
