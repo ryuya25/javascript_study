@@ -14,24 +14,25 @@ degreeMax = 360
 degree2radian = 2 * math.pi / degreeMax
 
 circleNumber = 3
-lineNumber = 6
-groundNumber = 10
+lineNumber = 8
+groundNumber = 6
 
 class rotateCircle():
+    centerX = 0.5;
+    centerY = 0.33;
+    rangeX = 0.33;
+    rangeY = 0.1;
+    centerRadius = 0.01;
+    rangeRadius = 0.003;
+
+    gradationAngle = 2
+    gradationNumber = 5
+    updateAngle = 10
+
     def __init__(self, angle):
         self.angle = angle
         self.hue = angle
 
-        self.centerX = 0.5;
-        self.centerY = 0.33;
-        self.rangeX = 0.33;
-        self.rangeY = 0.1;
-        self.centerRadius = 0.01;
-        self.rangeRadius = 0.003;
-    
-        self.gradationAngle = 2
-        self.gradationNumber = 5
-        self.updateAngle = 10
 
     def draw(self):
         angle = self.angle * degree2radian;
@@ -50,22 +51,23 @@ class rotateCircle():
         self.angle %= degreeMax
 
 class rotateLine():
+
+    X1 = 0.5
+    Y1 = 0.07
+    X2 = 0.5
+    Y2 = 0.72
+    centerX = 0.5
+    centerY = 0.6
+    rangeX = 0.3
+    rangeY = 0.05
+
+    gradationAngle = 1
+    gradationNumber = 10
+    updateAngle = 3
+
     def __init__(self, angle):
         self.angle = angle
         self.hue = angle
-
-        self.X1 = 0.5
-        self.Y1 = 0.07
-        self.X2 = 0.5
-        self.Y2 = 0.72
-        self.centerX = 0.5
-        self.centerY = 0.6
-        self.rangeX = 0.3
-        self.rangeY = 0.05
-
-        self.gradationAngle = 1
-        self.gradationNumber = 10
-        self.updateAngle = 3
 
     def draw(self):
         angle = self.angle * degree2radian;
@@ -78,7 +80,7 @@ class rotateLine():
         for i in range(self.gradationNumber):
             rgb = colorsys.hls_to_rgb(self.hue / degreeMax, 0.5 * i/ self.gradationNumber, 0.5 + self.angle / 360 / 2)
 
-            angle -= 1 * degree2radian
+            angle -= self.gradationAngle * degree2radian
             width = 1 if angle > math.pi else 2
 
             x = W * (self.centerX + self.rangeX * math.cos(angle))
@@ -93,28 +95,36 @@ class rotateLine():
             self.angle += degreeMax
 
 class dropGround():
+
+    X = 0.5
+    Ystart = 0.75
+    Yend = 1
+
+    gradationNumber = 10
+    rangeHue = 0.8
+
     def __init__(self, position):
         self.position = position
-        self.hue = position / 200
+        self.hue = position * self.rangeHue
 
     def draw(self):
 
-        for i in range(9,-1,-1):
-            pos = self.position + i
+        for i in range(self.gradationNumber):
+            pos = self.position + (self.gradationNumber - i)  / (self.gradationNumber * groundNumber)
 
-            x = W / 2;
-            y = H * (0.75 + 0.25 * pos * pos / 100 / 100);
-            size = (pos * pos) / 10000 * (W / 2);
+            x = W * self.X
+            y = H * (self.Ystart + (self.Yend - self.Ystart)  * pos * pos)
+            size = W * (pos * pos) / 2
     
-            rgb = colorsys.hls_to_rgb(self.hue, (i+1) / 15, 1.0 - pos / 110 * 0.25)
+            rgb = colorsys.hls_to_rgb(self.hue, 0.6 - i/ self.gradationNumber * 0.4,  0.5 )
             
-            pygame.draw.ellipse(screen,([_ *255 for _ in rgb]),(x-size, y-size*0.3, 2*size,2*size*0.3))
+            pygame.draw.ellipse(screen,([_ *255 for _ in rgb]),(x-size, y-size*(self.Yend - self.Ystart), 2*size,2*size*(self.Yend - self.Ystart)))
 
     def update(self):
-        self.position += 1
-        if self.position > 100:
+        self.position += 1 / (self.gradationNumber * groundNumber)
+        if self.position > 1:
             self.position = 0
-            self.hue += 100 / 200
+            self.hue += 1 - self.rangeHue
             if self.hue >= 1:
                 self.hue -= 1
 
@@ -128,7 +138,7 @@ for i in range(lineNumber):
 
 grounds = []
 for i in range(groundNumber):
-    grounds.append(dropGround(i / 10 * 100))
+    grounds.append(dropGround(i / groundNumber))
 
 running = True
 while running:
@@ -138,13 +148,13 @@ while running:
     
     screen.fill((0,0,0))
 
-    for c in circles:
-        c.draw()
-        c.update()
-
     for l in lines:
         l.draw()
         l.update()
+
+    for c in circles:
+        c.draw()
+        c.update()
 
     for g in sorted(grounds, key=lambda grounds: grounds.position, reverse=True):
         g.draw()
