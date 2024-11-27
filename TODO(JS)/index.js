@@ -29,7 +29,17 @@ const onClickAdd = () => {
     const completeButton = document.createElement("button")
     completeButton.innerText = "完了"
     completeButton.addEventListener("click", () => {
-        alert("完了");
+        // 押された完了ボタンの親にあるliタグは以下の完了ボタンと削除ボタンを削除
+        const moveTarget = completeButton.closest("li");
+        completeButton.nextElementSibling.remove(); // 削除ボタン(完了ボタンの次にあるボタン)を削除
+        completeButton.remove(); // 完了ボタン(実際にクリックしたボタン)を削除
+        // 戻すボタンを生成してdivタグ配下に追加
+        const backButton = document.createElement("button");
+        backButton.innerText = "戻す";
+        moveTarget.firstElementChild.appendChild(backButton)
+        // 完了リストに追加(liタグを完了リストに移動させたので未完了リストから自動的に削除される)
+        document.getElementById("complete-list").appendChild(moveTarget);
+
     })
 
     // button(削除)生成
@@ -38,7 +48,7 @@ const onClickAdd = () => {
     deleteButton.addEventListener("click", () => {
         // 押された削除ボタンの親にあるliタグを未完了リストから削除
         const deleteTarget = deleteButton.closest("li");
-        document.getElementById("imcomplete-list").removeChild(deleteTarget);
+        document.getElementById("incomplete-list").removeChild(deleteTarget);
     })
 
     // 階層構造を追加
@@ -47,8 +57,8 @@ const onClickAdd = () => {
     div.appendChild(deleteButton);
     li.appendChild(div);
 
-    // 未完了のTODOリスト(imcomplete-list)に対して、上記までで作成したHTMLを追加
-    document.getElementById("imcomplete-list").appendChild(li);
+    // 未完了のTODOリスト(incomplete-list)に対して、上記までで作成したHTMLを追加
+    document.getElementById("incomplete-list").appendChild(li);
 }
 
 document.getElementById("add-button").addEventListener("click", onClickAdd)
