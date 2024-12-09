@@ -23,7 +23,7 @@ function resizeCanvas() {
     canvas.width = W;
     canvas.height = H;
 
-//    stars.resetStars();
+    stars.resetStars();
 }
 
 
@@ -323,6 +323,7 @@ class ShootingStar {
     }
 }
 
+// オブジェクトの作成
 const circles = [];
 for (let i = 0; i < circleNumber; i++) {
     circles.push(new RotateCircle((degreeMax / circleNumber) * i));
@@ -342,38 +343,49 @@ const star = new Stars;
 
 const sstar = new ShootingStar;
 
+// イベントの作成
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+
+let animation = true
+function clickCanvas() {
+    animation = !animation;
+}
+
+canvas.addEventListener('click', clickCanvas, false);
 
 // アニメーション関数
 function animate() {
 
-    ctx.fillStyle = backgroundcolor;
-    ctx.fillRect(0, 0, W, H);
+    if (animation == true){
 
-    star.draw();
-    star.update();
-
-    sstar.draw();
-    sstar.update();
-
-    for (const line of lines) {
-        line.draw();
-        line.update();
+        ctx.fillStyle = backgroundcolor;
+        ctx.fillRect(0, 0, W, H);
+    
+        star.draw();
+        star.update();
+    
+        sstar.draw();
+        sstar.update();
+    
+        for (const line of lines) {
+            line.draw();
+            line.update();
+        }
+    
+        for (const circle of circles) {
+            circle.draw();
+            circle.update();
+        }
+    
+        // positionの降順でソートして描画
+        grounds.sort((a, b) => b.position - a.position);
+        for (const ground of grounds) {
+            ground.draw();
+            ground.update();
+        }
+    
     }
-
-    for (const circle of circles) {
-        circle.draw();
-        circle.update();
-    }
-
-    // positionの降順でソートして描画
-    grounds.sort((a, b) => b.position - a.position);
-    for (const ground of grounds) {
-        ground.draw();
-        ground.update();
-    }
-
     setTimeout(animate, 33);
 
     // 次のフレームをリクエスト
