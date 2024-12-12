@@ -17,6 +17,11 @@ const backgroundColorHLS = rgb_to_hls(...backgroundcolorRGB)
 const RandomRangeInt = (min, max) => Math.floor(Math.random() * (max - min) + min);
 const RandomRange = (min, max) => Math.random() * (max - min) + min;
 
+const Side = {
+    Front: true,
+    Back: false
+};
+
 // ウィンドウサイズに合わせてキャンバスをリサイズ
 function resizeCanvas() {
     W = window.innerWidth;
@@ -114,7 +119,15 @@ class RotateCircle {
         this.gradationAngle = 2
     }
 
-    draw() {
+    isFrontSide(){
+        if (this.angle < 180){
+                return Side.Front
+        }else{
+            return Side.Back
+        }
+    }
+
+    draw(side) {
         let angle = this.angle * degree2radian;
 
         for (let i = 0; i < this.gradationNumber; i++) {
@@ -161,7 +174,15 @@ class RotateLine {
         this.updateAngle = 3
     }
 
-    draw() {
+    isFrontSide(){
+        if (this.angle < 180){
+                return Side.Front
+        }else{
+            return Side.Back
+        }
+    }
+
+    draw(side) {
         let angle = this.angle * degree2radian;
 
         const x1 = W * this.X1
@@ -379,17 +400,49 @@ function animate() {
             ground.update();
         }
 
+        // 奥側を表示
+        // (奥側を先に表示することで手前側の表示を優先する)
+
         // 回転する円の表示(奥側)
+        for (const circle of circles) {
+            if (!circle.isFrontSide()){
+                circle.draw(Side.Back);
+            }
+        }
+
+        // 回転する線の表示(奥側)
         for (const line of lines) {
-            line.draw();
+            if (!line.isFrontSide()){
+                line.draw(Side.Back);
+            }
+        }
+
+        // 手前側を表示
+
+        // 回転する線の表示(手前側)
+        for (const line of lines) {
+            if (line.isFrontSide()){
+                line.draw(Side.Front);
+            }
+        }
+
+        // 回転する円の表示(手前側)
+        for (const circle of circles) {
+            if (circle.isFrontSide()){
+                circle.draw(Side.Front);
+            }
+        }
+
+        // 回転する線のデータ更新
+        for (const line of lines) {
             line.update();
         }
     
+        // 回転する円のデータ更新
         for (const circle of circles) {
-            circle.draw();
             circle.update();
         }
-    
+
     }
     setTimeout(animate, 33);
 
