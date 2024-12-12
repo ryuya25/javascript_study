@@ -14,7 +14,8 @@ const backgroundcolor = `rgb(25, 25, 112)`; // "MidnightBlue";
 const backgroundcolorRGB = [25, 25, 112]
 const backgroundColorHLS = rgb_to_hls(...backgroundcolorRGB)
 
-const myRandom = (min, max) => Math.floor(Math.random() * (max - min) + min);
+const RandomRangeInt = (min, max) => Math.floor(Math.random() * (max - min) + min);
+const RandomRange = (min, max) => Math.random() * (max - min) + min;
 
 // ウィンドウサイズに合わせてキャンバスをリサイズ
 function resizeCanvas() {
@@ -250,18 +251,18 @@ class Stars {
 
     resetStars() {
         const starColors = [
-            "LightYellow",  // 明るい白系
-            "Gold",         // 温かみのある黄色・オレンジ
-            "LightSkyBlue", // 冷たさを演出する青系
-            "Orchid"        // 儚い雰囲気を加える紫系
+            [255, 255, 224],    // LightYellow  明るい白系
+            [255, 215, 0  ],    // Gold         温かみのある黄色・オレンジ
+            [135, 206, 250],    // LightSkyBlue 冷たさを演出する青系
+            [218, 112, 214]     // Orchid       儚い雰囲気を加える紫系
         ];
 
         this.stars = Array.from({ length: 100 }, () => ({
-            x: myRandom(0, W),
-            y: myRandom(0, H),
-            r: myRandom(1, 3),
-            c: starColors[myRandom(0,starColors.length)],
-            d: myRandom(1, 5)
+            x: RandomRangeInt(0, W),
+            y: RandomRangeInt(0, H),
+            r: RandomRangeInt(1, 3),
+            c: `rgba(${starColors[RandomRangeInt(0, starColors.length)]},${RandomRange(0.5, 1.0)})`,
+            d: RandomRangeInt(1, 5)
         }))
     }
 
@@ -278,7 +279,7 @@ class Stars {
         for (const star of this.stars) {
             // 一定の確率で星のサイズを変更して、星の瞬きを再現
             if (Math.random() < 0.05) {
-                star.r = myRandom(1, 3);
+                star.r = RandomRangeInt(1, 3);
             }
             star.x += star.d / 3;
             star.y += star.d / 5;
@@ -314,10 +315,10 @@ class ShootingStar {
             }
         } else if (Math.random() < 0.1) {
             this.shootingStar = {
-                x: myRandom(0, W),
-                y: myRandom(0, H / 2),
-                dx: myRandom(5, 10),
-                dy: myRandom(5, 10)
+                x: RandomRangeInt(0, W),
+                y: RandomRangeInt(0, H / 2),
+                dx: RandomRangeInt(5, 10),
+                dy: RandomRangeInt(5, 10)
             };
         }
     }
@@ -339,7 +340,7 @@ for (let i = 0; i < groundNumber; i++) {
     grounds.push(new DropGround(i / groundNumber));
 }
 
-let stars = new Stars;
+const stars = new Stars;
 
 const sstar = new ShootingStar;
 
@@ -361,13 +362,24 @@ function animate() {
 
         ctx.fillStyle = backgroundcolor;
         ctx.fillRect(0, 0, W, H);
-    
+
+        // 星の表示とデータ更新
         stars.draw();
         stars.update();
     
+        // 流れ星の表示とデータ更新
         sstar.draw();
         sstar.update();
     
+        // 地面の表示とデータ更新
+        // positionの降順でソートして描画
+        grounds.sort((a, b) => b.position - a.position);
+        for (const ground of grounds) {
+            ground.draw();
+            ground.update();
+        }
+
+        // 回転する円の表示(奥側)
         for (const line of lines) {
             line.draw();
             line.update();
@@ -376,13 +388,6 @@ function animate() {
         for (const circle of circles) {
             circle.draw();
             circle.update();
-        }
-    
-        // positionの降順でソートして描画
-        grounds.sort((a, b) => b.position - a.position);
-        for (const ground of grounds) {
-            ground.draw();
-            ground.update();
         }
     
     }
