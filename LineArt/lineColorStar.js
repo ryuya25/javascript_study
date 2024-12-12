@@ -339,7 +339,7 @@ for (let i = 0; i < groundNumber; i++) {
     grounds.push(new DropGround(i / groundNumber));
 }
 
-const star = new Stars;
+let stars = new Stars;
 
 const sstar = new ShootingStar;
 
@@ -362,8 +362,8 @@ function animate() {
         ctx.fillStyle = backgroundcolor;
         ctx.fillRect(0, 0, W, H);
     
-        star.draw();
-        star.update();
+        stars.draw();
+        stars.update();
     
         sstar.draw();
         sstar.update();
